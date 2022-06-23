@@ -7,6 +7,9 @@
 # Opening the solution file
  * Since the scraper is made using **.NET 6.0 / C#10** you will need Visual Studio 2022 in order to open and compile the project.
 
+# Opening the exectuable file
+ * You will need [.NET 6.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime?cid=getdotnetcore) in order to run this application.
+
 # Usage
  * Open the application, paste a valid 4chan thread link and click **scrape**.  
  * I recommend to use it on small threads (30 or less images) since it's downloading files slowly.
