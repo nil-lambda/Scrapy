@@ -18,6 +18,6 @@
  * The scraper creates only one directory on launch that is located at **C:\\Scraper**
 
 # Todo
- * Thread specific directories.
- * More information about the thread (filename, preview url, subject).
- * Option to export the thread information as json.
+- [ ] Thread specific directories.
+- [ ] More information about the thread (filename, preview url, subject).
+- [ ] Option to export the thread information as json.
