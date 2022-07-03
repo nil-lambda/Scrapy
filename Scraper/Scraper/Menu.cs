@@ -1,21 +1,42 @@
-using System.Text;
 using System.Text.RegularExpressions;
+
+using Scraper.Expressions;
 
 namespace Scraper
 {
     public partial class Menu : Form
     {
-        public Menu()
+        public Menu() => InitializeComponent();
+
+
+        private string? DirectoryName { get; set; }
+
+        private string? BoardTag { get; set; }
+
+        private string? BoardId { get; set; }
+
+        private int SuccessCount { get; set; }
+
+
+        private void Menu_Load(object sender, EventArgs e)
         {
-            InitializeComponent();
+            if (!Directory.Exists("C:\\Scraper"))
+                Directory.CreateDirectory("C:\\Scraper");
+
         }
 
-        private readonly Regex linkRegex = new Regex(@"boards\.(4chan|4channel)\.org\/(.*?)\/thread\/(\d+)");
-        private readonly Regex imageRegex = new Regex("<a\\s+class=\"fileThumb\"\\s+href=\"\\/\\/(.*?)\"");
-        private readonly Regex fileNameRegex = new Regex(@"(.*)\/(.*)");
+        private void CreateDirectory()
+        {
+            if (Directory.Exists($"C:\\Scraper\\{DirectoryName}"))
+                return;
+
+            Directory.CreateDirectory($"C:\\Scraper\\{DirectoryName}");
+        }
 
         private async void ScrapeButton_Click(object sender, EventArgs e)
         {
+            CreateDirectory();
+
             listBox1.Items.Clear();
 
             using (HttpClient client = new HttpClient())
@@ -32,32 +53,38 @@ namespace Scraper
 
                     Task<string> urlContent = client.GetStringAsync(linkBox.Text);
 
-                    foreach (Match imageMatch in imageRegex.Matches(urlContent.Result))
+                    foreach (Match imageMatch in Regexr.ImageLinkRegex.Matches(urlContent.Result))
                     {
                         listBox1.Items.Add(imageMatch.Groups[1].Value);
                     }
 
-                    label4.Text = $"[Scraped {listBox1.Items.Count} items]";
-                    await Task.Run(() => Download());
+                    label4.ForeColor = Color.DarkMagenta;
+                    label4.Text = $"[Trying to scrape {listBox1.Items.Count} items...]";
+
+                    await Download();
+
+                    label4.ForeColor = Color.Green;
+                    label4.Text = $"[Scraped {SuccessCount} items]";
                 }
             }
         }
 
-        private async void Download()
+        private async Task Download()
         {
             foreach (string item in listBox1.Items)
             {
-                foreach (Match getName in fileNameRegex.Matches(item))
+                foreach (Match getName in Regexr.FileNameRegex.Matches(item))
                 {
                     string fileName = getName.Groups[2].Value;
 
-                    using (FileStream fileWriter = new FileStream($"C:\\Scraper\\{fileName}", FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                    using (FileStream fileWriter = new FileStream($"C:\\Scraper\\{DirectoryName}\\{fileName}", FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
                     {
                         using (HttpClient client = new HttpClient())
                         {
-                            using (Stream imageBytes = await client.GetStreamAsync($"https://{item}"))
+                            using (Stream imageStream = await client.GetStreamAsync($"https://{item}"))
                             {
-                                await Task.Run(() => imageBytes.CopyTo(fileWriter));
+                                await imageStream.CopyToAsync(fileWriter);
+                                SuccessCount++;
                             }
                         }
                     }
@@ -67,12 +94,15 @@ namespace Scraper
 
         private void LinkBox_TextChanged(object sender, EventArgs e)
         {
-            switch (linkRegex.IsMatch(linkBox.Text))
+            switch (Regexr.ThreadLinkRegex.IsMatch(linkBox.Text))
             {
                 case true:
                     scrapeButton.Enabled = true;
                     label2.ForeColor = Color.Green;
-                    label2.Text = $"[Thread link detected - /{linkRegex.Match(linkBox.Text).Groups[2].Value}/]";
+                    label2.Text = $"[Thread link detected - /{Regexr.ThreadLinkRegex.Match(linkBox.Text).Groups[2].Value}/]";
+                    BoardTag = Regexr.ThreadLinkRegex.Match(linkBox.Text).Groups[2].Value;
+                    BoardId = Regexr.ThreadLinkRegex.Match(linkBox.Text).Groups[3].Value;
+                    DirectoryName = $"Thread_{BoardId}_{BoardTag}";
                     break;
 
                 case false:
