@@ -19,5 +19,6 @@
 
 # Todo
 - [X] Thread specific directories.
+- [ ] Add catalogue scraper for specific board.
 - [ ] More information about the thread (filename, preview url, subject).
 - [ ] Option to export the thread information as json.
