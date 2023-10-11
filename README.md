@@ -1,4 +1,4 @@
-# Image-Scraper
+# Scraper
  * Downloads images from 4chan threads.
 
 # Preview
