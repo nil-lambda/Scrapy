@@ -1,3 +1,5 @@
+⚠️ Due to recent changes made to the site, the scraper temporarily doesn't work. It will be up and running as soon as possible!
+
 # Scraper
  * Downloads images and media from 4chan threads.
 
