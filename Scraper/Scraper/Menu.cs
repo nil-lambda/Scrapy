@@ -43,12 +43,12 @@ namespace Scraper
             {
                 using (HttpResponseMessage statusCode = await client.GetAsync(linkBox.Text))
                 {
-                    label3.Text = $"[Page returned {statusCode.StatusCode}]";
+                    pageStatusLabel.Text = $"[Page returned {statusCode.StatusCode}]";
 
                     switch (statusCode.IsSuccessStatusCode)
                     {
-                        case true: label3.ForeColor = Color.Green; break;
-                        case false: label3.ForeColor = Color.Red; return;
+                        case true: pageStatusLabel.ForeColor = Color.Green; break;
+                        case false: pageStatusLabel.ForeColor = Color.Red; return;
                     }
 
                     Task<string> urlContent = client.GetStringAsync(linkBox.Text);
@@ -58,13 +58,13 @@ namespace Scraper
                         listBox1.Items.Add(imageMatch.Groups[1].Value);
                     }
 
-                    label4.ForeColor = Color.DarkMagenta;
-                    label4.Text = $"[Trying to scrape {listBox1.Items.Count} items...]";
+                    scrapeTotalLabel.ForeColor = Color.DarkMagenta;
+                    scrapeTotalLabel.Text = $"[Trying to scrape {listBox1.Items.Count} items...]";
 
                     await Download();
 
-                    label4.ForeColor = Color.Green;
-                    label4.Text = $"[Scraped {SuccessCount} items]";
+                    scrapeTotalLabel.ForeColor = Color.Green;
+                    scrapeTotalLabel.Text = $"[Scraped {SuccessCount} items]";
                 }
             }
         }
