@@ -8,7 +8,6 @@ namespace Scraper
     {
         public Menu() => InitializeComponent();
 
-
         private string? DirectoryName { get; set; }
 
         private string? BoardTag { get; set; }
@@ -17,12 +16,57 @@ namespace Scraper
 
         private int SuccessCount { get; set; }
 
+        private Dictionary<string, string> RequestConfig;
 
         private void Menu_Load(object sender, EventArgs e)
         {
             if (!Directory.Exists("C:\\Scraper"))
                 Directory.CreateDirectory("C:\\Scraper");
 
+            ReadAndAssignConfig();
+        }
+        
+        private void ReadAndAssignConfig()
+        {
+            const string configFileName = "config.env";
+            this.RequestConfig = new Dictionary<string, string>();
+
+            if (!File.Exists(configFileName))
+            {
+                using (StreamWriter stream = new(File.Create(configFileName)))
+                {
+                    stream.WriteLine("USER_AGENT=");
+                    stream.WriteLine("COOKIE=");
+                }
+
+                MessageBox.Show("File \"config.env\" was not found, so it has been created. Add information in it to avoid errors. The scraper will now exit.", "Config error");
+                Environment.Exit(0);
+            }
+
+            using (StreamReader stream = new StreamReader(configFileName))
+            {
+                while (!stream.EndOfStream)
+                {
+                    string currentLine = stream.ReadLine();
+                    string[] currentRequestHeader = currentLine.Split('=', 2);
+
+                    if (string.IsNullOrEmpty(currentRequestHeader[1]))
+                    {
+                        MessageBox.Show($"{currentRequestHeader[0]} has no given value in \"config.env\". You wont be able to scrape.", "Config error");
+                        return;
+                    }
+
+                    this.RequestConfig[currentRequestHeader[0].Trim()] = currentRequestHeader[1].Trim();
+
+                    /*
+                     * currentRequestHeader[0] is the request header (USER_AGENT)
+                     * currentRequestHeader[1] is the request header value given by the user (Mozilla/5.0...)
+                     */
+                }
+            }
+
+            configLabel.Text = "[Cookie && Useragent set]";
+            configLabel.ForeColor = Color.Green;
         }
 
         private void CreateDirectory()
