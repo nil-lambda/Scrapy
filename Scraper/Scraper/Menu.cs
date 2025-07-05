@@ -127,27 +127,25 @@ namespace Scraper
 
         private async Task Download()
         {
-            foreach (string item in listBox1.Items)
+            foreach (string fileUrl in listBox1.Items)
             {
-                foreach (Match getName in Regexr.FileNameRegex.Matches(item))
-                {
-                    string fileName = getName.Groups[2].Value;
+                string fileName = Regexr.FileNameRegex.Match(fileUrl).Groups[2].Value;
 
-                    using (FileStream fileWriter = new FileStream($"C:\\Scraper\\{this.DirectoryName}\\{fileName}", FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                using (FileStream fileWriter = new FileStream($"C:\\Scraper\\{this.DirectoryName}\\{fileName}", FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    using (Stream imageStream = await this.Client.GetStreamAsync($"https://{fileUrl}"))
                     {
-                        using (Stream imageStream = await this.Client.GetStreamAsync($"https://{item}"))
-                        {
-                            await imageStream.CopyToAsync(fileWriter);
-                            this.SuccessCount++;
-                        }
+                        await imageStream.CopyToAsync(fileWriter);
                     }
                 }
+
+                this.SuccessCount++;
             }
         }
 
         private void LinkBox_TextChanged(object sender, EventArgs e)
         {
-            if (!this.CanScrape) 
+            if (!this.CanScrape)
                 return;
 
             Match match = Regexr.ThreadLinkRegex.Match(linkBox.Text);
