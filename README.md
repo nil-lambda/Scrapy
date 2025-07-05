@@ -1,7 +1,10 @@
-⚠️ Due to recent changes made to the site, the scraper temporarily doesn't work. It will be up and running as soon as possible!
+# ❗ Current state ❗
+**Due to recent changes made to the site, the scraper temporarily doesn't work. It will be up and running as soon as possible!**<br><br>
+The user will need to provide their _**user-agent**_ and _**cookie**_ in the configuration file to use their session. (A guide on how to do this will be provided once everything is working)<br><br>
+<sup>This README file will also be refined.</sup>
 
 # Scraper
- * Downloads images and media from 4chan threads.
+ * Downloads images and media from 4chan threads
 
 # Preview
  ![](https://i.imgur.com/9CEe34G.gif)
