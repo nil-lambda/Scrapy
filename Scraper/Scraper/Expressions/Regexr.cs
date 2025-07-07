@@ -6,8 +6,6 @@ namespace Scraper.Expressions
     {
         public static Regex ThreadLinkRegex = new Regex(@"boards\.(4chan|4channel)\.org\/(.*?)\/thread\/(\d+)");
 
-        public static Regex ImageLinkRegex = new Regex("<a\\s+class=\"fileThumb\"\\s+href=\"\\/\\/(.*?)\"");
-
-        public static Regex FileNameRegex = new Regex(@"(.*)\/(.*)");
+        public static Regex ImageRegex = new Regex("\"ext\":\\s*\"(.*?)\".*?\"tim\":\\s*(\\d+)", RegexOptions.Singleline);
     }
 }
