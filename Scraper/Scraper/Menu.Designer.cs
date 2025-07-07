@@ -100,9 +100,9 @@
             configLabel.ForeColor = Color.Red;
             configLabel.Location = new Point(5, 216);
             configLabel.Name = "configLabel";
-            configLabel.Size = new Size(181, 15);
+            configLabel.Size = new Size(112, 15);
             configLabel.TabIndex = 7;
-            configLabel.Text = "[No cookie and/or useragent set]";
+            configLabel.Text = "[No User-Agent set]";
             // 
             // Menu
             // 
