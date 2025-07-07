@@ -12,75 +12,59 @@ namespace Scraper
 
         private string? BoardTag;
 
-        private string? BoardId;
+        private string? ThreadId;
 
         private int SuccessCount;
 
-        private bool CanScrape;
-
-        private Dictionary<string, string> RequestConfig;
+        private string UserAgent;
 
         private HttpClientHandler ClientHandler;
 
         private HttpClient Client;
+
+        private const string BASE_URL = "https://a.4cdn.org";
+        private const string IMAGE_URL = "https://i.4cdn.org";
 
         private void Menu_Load(object sender, EventArgs e)
         {
             if (!Directory.Exists("C:\\Scraper"))
                 Directory.CreateDirectory("C:\\Scraper");
 
-            ReadAndAssignConfig();
+            ReadAndAssignUserAgent();
         }
 
-        private void ReadAndAssignConfig()
+        private void ReadAndAssignUserAgent()
         {
             const string configFileName = "config.env";
-            this.RequestConfig = new Dictionary<string, string>();
 
             if (!File.Exists(configFileName))
             {
-                File.WriteAllLines(configFileName, new[] { "USER_AGENT=", "COOKIE=" });
+                File.WriteAllLines(configFileName, new[] { "USER_AGENT=" });
 
-                MessageBox.Show("File \"config.env\" was not found, so it has been created. Add information in it to avoid errors. The scraper will now exit.", "Config error");
+                MessageBox.Show("File \"config.env\" was not found, so it has been created. Add your user-agent in it to avoid errors. The scraper will now exit.", "Config error");
                 Environment.Exit(0);
             }
 
-            foreach (string currentLine in File.ReadAllLines(configFileName))
+            string[] requestHeader = File.ReadAllText(configFileName).Split('=', 2);
+
+            if (string.IsNullOrWhiteSpace(requestHeader[1]))
             {
-                string[] currentRequestHeader = currentLine.Split('=', 2);
-
-                if (string.IsNullOrEmpty(currentRequestHeader[1]))
-                {
-                    MessageBox.Show($"{currentRequestHeader[0]} has no given value in \"config.env\". You wont be able to scrape.", "Config error");
-                    this.CanScrape = false;
-
-                    return;
-                }
-
-                this.RequestConfig[currentRequestHeader[0].Trim()] = currentRequestHeader[1].Trim();
-
-                /*
-                 * currentRequestHeader[0] is the request header (USER_AGENT)
-                 * currentRequestHeader[1] is the request header value given by the user (Mozilla/5.0...)
-                 */
+                MessageBox.Show($"{requestHeader[0]} has no given user-agent value in \"config.env\". The scraper will now exit.", "Config error");
+                Environment.Exit(0);
             }
+
+            this.UserAgent = requestHeader[1].Trim();
 
             this.ClientHandler = new HttpClientHandler()
             {
                 AutomaticDecompression = System.Net.DecompressionMethods.All
             };
 
-            /* Additional predefined headers to make sure the request goes through successfully */
             this.Client = new HttpClient(this.ClientHandler);
-            this.Client.DefaultRequestHeaders.Add("User-Agent", this.RequestConfig["USER_AGENT"]);
-            this.Client.DefaultRequestHeaders.Add("Cookie", this.RequestConfig["COOKIE"]);
-            this.Client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8");
-            this.Client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
-            this.Client.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
+            this.Client.DefaultRequestHeaders.Add("User-Agent", this.UserAgent);
 
-            configLabel.Text = "[Cookie && Useragent set]";
+            configLabel.Text = "[User-Agent set]";
             configLabel.ForeColor = Color.Green;
-            this.CanScrape = true;
         }
 
         private void CreateDirectory()
@@ -97,7 +81,9 @@ namespace Scraper
 
             listBox1.Items.Clear();
 
-            using (HttpResponseMessage statusCode = await this.Client.GetAsync(linkBox.Text))
+            string transformedThreadUrl = $"{BASE_URL}/{this.BoardTag}/thread/{this.ThreadId}.json";
+
+            using (HttpResponseMessage statusCode = await this.Client.GetAsync(transformedThreadUrl))
             {
                 pageStatusLabel.Text = $"[Page returned {statusCode.StatusCode}]";
 
@@ -107,11 +93,11 @@ namespace Scraper
                     case false: pageStatusLabel.ForeColor = Color.Red; return;
                 }
 
-                Task<string> threadHtmlContent = this.Client.GetStringAsync(linkBox.Text);
+                Task<string> threadContent = this.Client.GetStringAsync(transformedThreadUrl);
 
-                foreach (Match imageMatch in Regexr.ImageLinkRegex.Matches(threadHtmlContent.Result))
+                foreach (Match imageMatch in Regexr.ImageRegex.Matches(threadContent.Result))
                 {
-                    listBox1.Items.Add(imageMatch.Groups[1].Value);
+                    listBox1.Items.Add($"{IMAGE_URL}/{this.BoardTag}/{imageMatch.Groups[2].Value}{imageMatch.Groups[1].Value}");
                 }
 
                 scrapeTotalLabel.ForeColor = Color.DarkMagenta;
@@ -129,11 +115,11 @@ namespace Scraper
         {
             foreach (string fileUrl in listBox1.Items)
             {
-                string fileName = Regexr.FileNameRegex.Match(fileUrl).Groups[2].Value;
+                string fileName = fileUrl.Substring(fileUrl.LastIndexOf('/') + 1);
 
                 using (FileStream fileWriter = new FileStream($"C:\\Scraper\\{this.DirectoryName}\\{fileName}", FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    using (Stream imageStream = await this.Client.GetStreamAsync($"https://{fileUrl}"))
+                    using (Stream imageStream = await this.Client.GetStreamAsync(fileUrl))
                     {
                         await imageStream.CopyToAsync(fileWriter);
                     }
@@ -145,9 +131,6 @@ namespace Scraper
 
         private void LinkBox_TextChanged(object sender, EventArgs e)
         {
-            if (!this.CanScrape)
-                return;
-
             Match match = Regexr.ThreadLinkRegex.Match(linkBox.Text);
             if (!match.Success)
             {
@@ -163,8 +146,8 @@ namespace Scraper
             label2.Text = $"[Thread link detected - /{match.Groups[2].Value}/]";
 
             this.BoardTag = match.Groups[2].Value;
-            this.BoardId = match.Groups[3].Value;
-            this.DirectoryName = $"Thread_{this.BoardId}_{this.BoardTag}";
+            this.ThreadId = match.Groups[3].Value;
+            this.DirectoryName = $"Thread_{this.ThreadId}_{this.BoardTag}";
         }
     }
 }
