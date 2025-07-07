@@ -1,32 +1,24 @@
-# ❗ Current state ❗
-**Due to recent changes made to the site, the scraper temporarily doesn't work. It will be up and running as soon as possible!**<br><br>
-The user will need to provide their _**user-agent**_ and _**cookie**_ in the configuration file to use their session. (A guide on how to do this will be provided once everything is working)<br><br>
-<sup>This README file will also be refined.</sup>
+## About
+Scrapy is media scraper for [4chan.org](https://4chan.org/) for archiving purposes. It downloads all media files off a thread locally.
 
-# Scraper
- * Downloads images and media from 4chan threads
+## Compatibility & Requirements
+Scrapy is developed for **Windows**. It may run on Linux with [Wine](https://www.winehq.org/) but this is untested.
+* Requires [.NET 6.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime?cid=getdotnetcore) to run.
 
-# Preview
- ![](https://i.imgur.com/9CEe34G.gif)
+If you wish to compile the project yourself and/or make adjustments, you'll need:
+* Visual Studio 2022 to open the project.
+  * The project is built with .NET 6.0 (C# 10)
 
-# Opening the solution file
- * Since the scraper is made using **.NET 6.0 / C#10** you will need Visual Studio 2022 in order to open and compile the project.
+## Downloading
+Download `Scraper.rar` from the [latest release](https://github.com/nil-lambda/Scrapy/releases/latest), extract it and run the executable file corresponding to your system.
 
-# Opening the exectuable file
- * You will need [.NET 6.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0/runtime?cid=getdotnetcore) in order to run this application.
+## Errors and their meaning
 
-# Usage
- * Open the application, paste a valid 4chan thread link and click **scrape**.
+If the **Page Status** turns red, check the message:
+* `NotFound` - The thread is archived and no longer accessible. The scraper currently doesn't support scraping archived threads.
+* `TooManyRequests` - Try changing your User-Agent in `config.env` file.
 
-# Notice
- * The download is single-threaded therefore scraping big threads will take longer time.
+> The Scraper uses `Mozilla/5.0 (X11; Linux)` User-Agent by default specified by `config.env` file. It is not hard-coded for flexibility.
 
-# Directories
- * The scraper creates initial directory located at **C:\\Scraper**
- * Each thread has its own specific directory located at **C:\\Scraper\\Thread_ID_BOARD**
-
-# Todo
-- [X] Thread specific directories.
-- [ ] Add catalog scraper for specific board.
-- [ ] More information about the thread (filename, preview url, subject).
-- [ ] Option to export the thread information as json.
+## Where is the media saved
+All downloaded media is saved under `C:\Scraper`. Each thread gets its own subdirectory.
